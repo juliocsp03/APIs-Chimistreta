@@ -1,5 +1,5 @@
-bin
-include
-lib
-lib64
+/bin
+/include
+/lib
+/lib64
 *.cfg
