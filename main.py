@@ -7,7 +7,7 @@ from flask_cors import CORS
 app = Flask (__name__)
 CORS(app)
 
-conn = psycopg2.connect(database="prueba", host="172.17.0.1", user="postgres", password="example", port="5433")
+conn = psycopg2.connect(database="prueba", host="alpha.tamps.cinvestav.mx", user="postgres", password="example", port="5437")
 
 
 @app.route("/")
@@ -82,4 +82,4 @@ def getProducts():
 			return response
 
 if __name__ == '__main__':
-    app.run(port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True)
