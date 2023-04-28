@@ -8,7 +8,7 @@ app = Flask (__name__)
 CORS(app)
 
 conn = psycopg2.connect(database="prueba", host="alpha.tamps.cinvestav.mx", user="postgres", password="example", port="5437")
-
+# conn = psycopg2.connect(database="prueba", host="localhost", user="postgres", password="example", port="5433")
 
 @app.route("/")
 def index():
@@ -70,8 +70,11 @@ def getProducts():
 			}
 			return response
 	elif strict == False:
+		# print(levels)
 		levels = levels.replace('[', "%")
 		levels = levels.replace(']', '%')
+		levels = levels.replace("\\", "\\\\")
+		print(levels)
 		with conn.cursor(cursor_factory=RealDictCursor) as cursor:
 			cursor.execute(f"""SELECT id, methodology_id, url, levels, extension FROM methodology_instance WHERE levels->>'levels' LIKE '{levels}' AND methodology_id = {methodology_id};""")
 			res = cursor.fetchall()
