@@ -8,7 +8,7 @@ app = Flask (__name__)
 CORS(app)
 
 conn = psycopg2.connect(database="prueba", host="alpha.tamps.cinvestav.mx", user="postgres", password="example", port="5437")
-# conn = psycopg2.connect(database="prueba", host="localhost", user="postgres", password="example", port="5433")
+# conn = psycopg2.connect(database="testing_local", host="localhost", user="postgres", password="example", port="5433")
 
 @app.route("/")
 def index():
@@ -62,7 +62,7 @@ def getProducts():
 	levels = json.dumps(levels)
 	if strict == True:
 		with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-			cursor.execute(f"""SELECT id, methodology_id, url, levels, extension FROM methodology_instance WHERE levels->>'levels' = '{levels}' AND methodology_id = {methodology_id};""")
+			cursor.execute(f"""SELECT id, methodology_id, url, levels, extension, key FROM methodology_instance WHERE levels->>'levels' = '{levels}' AND methodology_id = {methodology_id};""")
 			res = cursor.fetchall()
 			response = {
 				"quantity": len(res),
@@ -82,7 +82,7 @@ def getProducts():
 		# print("CONSULTA")
 		# print(f"""SELECT id, methodology_id, url, levels, extension FROM methodology_instance WHERE levels->>'levels' LIKE '{levels}' AND methodology_id = {methodology_id};""")
 		with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-			cursor.execute(f"""SELECT id, methodology_id, url, levels, extension FROM methodology_instance WHERE levels->>'levels' ILIKE '{levels}' AND methodology_id = {methodology_id} ORDER BY levels->>'number_of_levels';""")
+			cursor.execute(f"""SELECT id, methodology_id, url, levels, extension, key FROM methodology_instance WHERE levels->>'levels' ILIKE '{levels}' AND methodology_id = {methodology_id} ORDER BY levels->>'number_of_levels';""")
 			res = cursor.fetchall()
 			response = {
 				"quantity": len(res),
@@ -90,6 +90,19 @@ def getProducts():
 			}
 			return response
 		# return "simón"
+
+@app.route("/api/product")
+def getProduct():
+	data = request.args.get('id')
+	print("DATA", "*"*50)
+	print(data)
+	with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+		cursor.execute(f"SELECT * FROM methodology_instance WHERE key = '{data}';")
+		res = cursor.fetchone()
+		response = {
+			"data": res,
+		}
+		return response
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)
