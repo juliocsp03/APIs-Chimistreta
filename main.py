@@ -7,8 +7,8 @@ from flask_cors import CORS
 app = Flask (__name__)
 CORS(app)
 
-conn = psycopg2.connect(database="prueba", host="alpha.tamps.cinvestav.mx", user="postgres", password="example", port="5437")
-# conn = psycopg2.connect(database="testing_local", host="localhost", user="postgres", password="example", port="5433")
+# conn = psycopg2.connect(database="prueba", host="alpha.tamps.cinvestav.mx", user="postgres", password="example", port="5437")
+conn = psycopg2.connect(database="prueba", host="localhost", user="postgres", password="example", port="5433")
 
 @app.route("/")
 def index():
@@ -21,15 +21,9 @@ def getLevelsRoots():
 	with conn.cursor(cursor_factory=RealDictCursor) as cursor:
 		cursor.execute(f"SELECT * FROM levels_roots WHERE methodology_id = {methodology_id};")
 		res = cursor.fetchall()
-		# cursor.execute(f"SELECT max(level) FROM levels WHERE methodology_id = {methodology_id};")
-		# total_levels = cursor.fetchone()
-		# # more_levels = False
-		# # if total_levels['max'] > level:
-		# # 	more_levels = True
 		response = {
 			"quantity": len(res),
 			"levels_roots": res,
-			# "more_levels": more_levels
 		}
 		return response
 
@@ -70,17 +64,11 @@ def getProducts():
 			}
 			return response
 	elif strict == False:
-		# print("*"*100)
-		# print(levels)
-		# levels = levels.replace('[', "%")
-		# levels = levels.replace(']', '%')
 		levels = levels.replace('[', "")
 		levels = levels.replace(']', '')
 		levels = levels.replace('\"', '%')
 		levels = levels.replace("\\", "\\\\")
-		# print(levels)
-		# print("CONSULTA")
-		# print(f"""SELECT id, methodology_id, url, levels, extension FROM methodology_instance WHERE levels->>'levels' LIKE '{levels}' AND methodology_id = {methodology_id};""")
+		print(f"""SELECT id, methodology_id, url, levels, extension, key FROM methodology_instance WHERE levels->>'levels' ILIKE '{levels}' AND methodology_id = {methodology_id} ORDER BY levels->>'number_of_levels';""")
 		with conn.cursor(cursor_factory=RealDictCursor) as cursor:
 			cursor.execute(f"""SELECT id, methodology_id, url, levels, extension, key FROM methodology_instance WHERE levels->>'levels' ILIKE '{levels}' AND methodology_id = {methodology_id} ORDER BY levels->>'number_of_levels';""")
 			res = cursor.fetchall()
@@ -99,6 +87,46 @@ def getProduct():
 	with conn.cursor(cursor_factory=RealDictCursor) as cursor:
 		cursor.execute(f"SELECT * FROM methodology_instance WHERE key = '{data}';")
 		res = cursor.fetchone()
+		response = {
+			"data": res,
+		}
+		return response
+
+@app.route("/api/methodology-data")
+def getMethodologyData():
+	methodology_id = request.args.get('id')
+	print("methodology", "*"*50)
+	print(methodology_id)
+	with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+		cursor.execute(f"SELECT * FROM methodology WHERE id = '{methodology_id}';")
+		res = cursor.fetchone()
+		response = {
+			"data": res,
+		}
+		return response
+
+@app.route("/api/rating", methods = ['POST'])
+def setRatingValue():
+	data = request.json
+	product_id = data.get("product_id")
+	user_id = data.get("user_id")
+	rating = data.get("rating")
+	with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+		cursor.execute("INSERT INTO ratings (rating, user_id, product_id) VALUES (%s, %s, %s)", (rating, user_id, product_id,))
+		conn.commit()
+		response = {
+			"status": "ok"
+		}
+		return response
+
+@app.route("/api/rating")
+def getRatings():
+	product_id = request.args.get('id')
+	print("methodology", "*"*50)
+	print(product_id)
+	with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+		cursor.execute(f"SELECT avg(rating) as estrellitas FROM ratings WHERE product_id = '{product_id}';")
+		res = cursor.fetchall()
 		response = {
 			"data": res,
 		}
