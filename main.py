@@ -7,8 +7,8 @@ from flask_cors import CORS
 app = Flask (__name__)
 CORS(app)
 
-# conn = psycopg2.connect(database="prueba", host="alpha.tamps.cinvestav.mx", user="postgres", password="example", port="5437")
-conn = psycopg2.connect(database="prueba", host="localhost", user="postgres", password="example", port="5433")
+conn = psycopg2.connect(database="nueva", host="alpha.tamps.cinvestav.mx", user="postgres", password="example", port="5437")
+# conn = psycopg2.connect(database="prueba", host="localhost", user="postgres", password="example", port="5433")
 
 @app.route("/")
 def index():
@@ -98,7 +98,7 @@ def getMethodologyData():
 	print("methodology", "*"*50)
 	print(methodology_id)
 	with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-		cursor.execute(f"SELECT * FROM methodology WHERE id = '{methodology_id}';")
+		cursor.execute("SELECT * FROM methodology WHERE id = %s", (methodology_id,))
 		res = cursor.fetchone()
 		response = {
 			"data": res,
@@ -111,21 +111,27 @@ def setRatingValue():
 	product_id = data.get("product_id")
 	user_id = data.get("user_id")
 	rating = data.get("rating")
+	methodology_id = data.get("methodology_id")
 	with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-		cursor.execute("INSERT INTO ratings (rating, user_id, product_id) VALUES (%s, %s, %s)", (rating, user_id, product_id,))
+		cursor.execute("INSERT INTO ratings (rating, user_id, product_id, methodology_id) VALUES (%s, %s, %s, %s)", (rating, user_id, product_id, methodology_id,))
 		conn.commit()
+		# cursor.execute(f"SELECT p.id, p.methodology_id, p.url, p.levels, p.extension, p.key, r.stars FROM methodology_instance as p, (SELECT avg(rating) as stars FROM ratings WHERE product_id = '{product_id}') as r WHERE p.key = '{product_id}'")
+		cursor.execute("SELECT p.id, p.methodology_id, p.url, p.levels, p.extension, p.key, r.stars FROM methodology_instance as p, (SELECT avg(rating) as stars FROM ratings WHERE product_id = %s and methodology_id = %s) as r WHERE p.key = %s", (product_id, methodology_id, product_id, ))
+		res = cursor.fetchall()
+		print("la res", "*"*60)
+		print(res)
 		response = {
-			"status": "ok"
+			"data": res
 		}
 		return response
 
 @app.route("/api/rating")
 def getRatings():
-	product_id = request.args.get('id')
+	methodology_id = request.args.get('id')
 	print("methodology", "*"*50)
-	print(product_id)
+	print(methodology_id)
 	with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-		cursor.execute(f"SELECT avg(rating) as estrellitas FROM ratings WHERE product_id = '{product_id}';")
+		cursor.execute("select avg(rating), product_id from ratings where methodology_id = %s GROUP BY product_id", (methodology_id,))
 		res = cursor.fetchall()
 		response = {
 			"data": res,
