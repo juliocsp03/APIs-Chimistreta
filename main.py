@@ -138,5 +138,15 @@ def getRatings():
 		}
 		return response
 
+@app.route("/api/ratings/relevants")
+def getRelevantRatings():
+	with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+		cursor.execute("select avg(rating) as stars, product_id from ratings GROUP BY product_id ORDER BY stars LIMIT 15")
+		res = cursor.fetchall()
+		response = {
+			"data": res,
+		}
+		return response
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)
