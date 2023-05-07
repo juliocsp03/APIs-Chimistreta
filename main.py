@@ -7,8 +7,8 @@ from flask_cors import CORS
 app = Flask (__name__)
 CORS(app)
 
-conn = psycopg2.connect(database="nueva", host="alpha.tamps.cinvestav.mx", user="postgres", password="example", port="5437")
-# conn = psycopg2.connect(database="prueba", host="localhost", user="postgres", password="example", port="5433")
+# conn = psycopg2.connect(database="nueva", host="alpha.tamps.cinvestav.mx", user="postgres", password="example", port="5437")
+conn = psycopg2.connect(database="prueba", host="localhost", user="postgres", password="example", port="5433")
 
 @app.route("/")
 def index():
@@ -85,7 +85,7 @@ def getProduct():
 	print("DATA", "*"*50)
 	print(data)
 	with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-		cursor.execute(f"SELECT * FROM methodology_instance WHERE key = '{data}';")
+		cursor.execute("SELECT p.id, p.methodology_id, p.url, p.levels, p.extension, p.key, r.stars FROM methodology_instance as p, (SELECT avg(rating) as stars FROM ratings WHERE product_id = %s) as r WHERE p.key = %s", (data, data, ))
 		res = cursor.fetchone()
 		response = {
 			"data": res,
