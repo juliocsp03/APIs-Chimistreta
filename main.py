@@ -141,7 +141,8 @@ def getRatings():
 @app.route("/api/ratings/relevants")
 def getRelevantRatings():
 	with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-		cursor.execute("select avg(rating) as stars, product_id from ratings GROUP BY product_id ORDER BY stars LIMIT 15")
+		# cursor.execute("select avg(rating) as stars, product_id from ratings GROUP BY product_id ORDER BY stars DESC LIMIT 15")
+		cursor.execute("SELECT p.id, p.methodology_id, p.url, p.levels, p.extension, p.key, r.stars, r.product_id FROM methodology_instance as p, (SELECT avg(rating) as stars, product_id FROM ratings GROUP BY product_id ORDER BY stars DESC LIMIT 15) as r WHERE p.key = r.product_id ORDER BY r.stars DESC")
 		res = cursor.fetchall()
 		response = {
 			"data": res,
