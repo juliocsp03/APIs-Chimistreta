@@ -1,16 +1,29 @@
 version: '3'
 services:
 
-  apichimistreta:
-    image: apichimistreta
-    hostname: apichimistreta
+  api_service_1:
+    image: api_chimistreta
+    hostname: api_service_1
     build:
       context: ./
       dockerfile: ./Dockerfile
-    networks:
-      - panel_v1
     ports:
-      - 5000:5000
+      - 5001:5000
 
-networks:
-  panel_v1:
+  api_service_2:
+    image: api_chimistreta
+    hostname: api_service_2
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    ports:
+      - 5002:5000
+
+  api_service_3:
+    image: api_chimistreta
+    hostname: api_service_3
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    ports:
+      - 5003:5000
