@@ -7,8 +7,8 @@ from flask_cors import CORS
 app = Flask (__name__)
 CORS(app)
 
-conn = psycopg2.connect(database="prueba", host="alpha.tamps.cinvestav.mx", user="postgres", password="example", port="5438")
-# conn = psycopg2.connect(database="prueba", host="192.168.100.4", user="postgres", password="example", port="5438")
+conn = psycopg2.connect(database="nueva", host="alpha.tamps.cinvestav.mx", user="postgres", password="example", port="5437")
+# conn = psycopg2.connect(database="prueba", host="192.168.100.12", user="postgres", password="example", port="5433")
 
 @app.route("/")
 def index():
@@ -56,7 +56,7 @@ def getProducts():
 	levels = json.dumps(levels)
 	if strict == True:
 		with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-			cursor.execute(f"""SELECT id, methodology_id, url, levels, extension, key, alias, type FROM methodology_instance WHERE levels->>'levels' = '{levels}' AND methodology_id = {methodology_id};""")
+			cursor.execute(f"""SELECT id, methodology_id, url, levels, extension, key FROM methodology_instance WHERE levels->>'levels' = '{levels}' AND methodology_id = {methodology_id};""")
 			res = cursor.fetchall()
 			response = {
 				"quantity": len(res),
@@ -68,9 +68,9 @@ def getProducts():
 		levels = levels.replace(']', '')
 		levels = levels.replace('\"', '%')
 		levels = levels.replace("\\", "\\\\")
-		print(f"""SELECT id, methodology_id, url, levels, extension, key, alias, type FROM methodology_instance WHERE levels->>'levels' ILIKE '{levels}' AND methodology_id = {methodology_id} ORDER BY levels->>'number_of_levels';""")
+		print(f"""SELECT id, methodology_id, url, levels, extension, key FROM methodology_instance WHERE levels->>'levels' ILIKE '{levels}' AND methodology_id = {methodology_id} ORDER BY levels->>'number_of_levels';""")
 		with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-			cursor.execute(f"""SELECT id, methodology_id, url, levels, extension, key, alias, type FROM methodology_instance WHERE levels->>'levels' ILIKE '{levels}' AND methodology_id = {methodology_id} ORDER BY levels->>'number_of_levels';""")
+			cursor.execute(f"""SELECT id, methodology_id, url, levels, extension, key FROM methodology_instance WHERE levels->>'levels' ILIKE '{levels}' AND methodology_id = {methodology_id} ORDER BY levels->>'number_of_levels';""")
 			res = cursor.fetchall()
 			response = {
 				"quantity": len(res),
@@ -85,7 +85,7 @@ def getProduct():
 	print("DATA", "*"*50)
 	print(data)
 	with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-		cursor.execute("SELECT p.id, p.methodology_id, p.url, p.levels, p.extension, p.key, p.alias, p.type, r.stars FROM methodology_instance as p, (SELECT avg(rating) as stars FROM ratings WHERE product_id = %s) as r WHERE p.key = %s", (data, data, ))
+		cursor.execute("SELECT p.id, p.methodology_id, p.url, p.levels, p.extension, p.key, r.stars FROM methodology_instance as p, (SELECT avg(rating) as stars FROM ratings WHERE product_id = %s) as r WHERE p.key = %s", (data, data, ))
 		res = cursor.fetchone()
 		response = {
 			"data": res,
@@ -142,7 +142,7 @@ def getRatings():
 def getRelevantRatings():
 	with conn.cursor(cursor_factory=RealDictCursor) as cursor:
 		# cursor.execute("select avg(rating) as stars, product_id from ratings GROUP BY product_id ORDER BY stars DESC LIMIT 15")
-		cursor.execute("SELECT p.id, p.methodology_id, p.url, p.levels, p.extension, p.key, p.alias, p.type, r.stars, r.product_id FROM methodology_instance as p, (SELECT avg(rating) as stars, product_id FROM ratings GROUP BY product_id ORDER BY stars DESC LIMIT 15) as r WHERE p.key = r.product_id ORDER BY r.stars DESC")
+		cursor.execute("SELECT p.id, p.methodology_id, p.url, p.levels, p.extension, p.key, r.stars, r.product_id FROM methodology_instance as p, (SELECT avg(rating) as stars, product_id FROM ratings GROUP BY product_id ORDER BY stars DESC LIMIT 15) as r WHERE p.key = r.product_id ORDER BY r.stars DESC")
 		res = cursor.fetchall()
 		response = {
 			"data": res,
@@ -150,4 +150,4 @@ def getRelevantRatings():
 		return response
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5010, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True)
