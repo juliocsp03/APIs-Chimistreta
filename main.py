@@ -7,8 +7,8 @@ from flask_cors import CORS
 app = Flask (__name__)
 CORS(app)
 
-conn = psycopg2.connect(database="nueva", host="alpha.tamps.cinvestav.mx", user="postgres", password="example", port="5437")
-# conn = psycopg2.connect(database="prueba", host="192.168.100.12", user="postgres", password="example", port="5433")
+# conn = psycopg2.connect(database="nueva", host="alpha.tamps.cinvestav.mx", user="postgres", password="example", port="5437")
+conn = psycopg2.connect(database="prueba", host="localhost", user="postgres", password="example", port="5433")
 
 @app.route("/")
 def index():
