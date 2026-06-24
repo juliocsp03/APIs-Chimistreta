@@ -1,3 +1,3 @@
-# apichimistreta
+# API de observatorios de datos.
 
-Efe
+Despliega servicios de observatorios de datos en infraestructura Docker. 
